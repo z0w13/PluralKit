@@ -25,6 +25,25 @@ services:
     environment:
       - "PluralKit:Database=Host=db;Username=postgres;Password=postgres;Database=postgres;Maximum Pool Size=1000"
       - "PluralKit:RedisAddr=redis"
+    restart: unless-stopped
+  api-proxy:
+    image: pluralkit/api
+    command: ["/api"]
+    init: true
+    build:
+      dockerfile: "Dockerfile.rust"
+      context: "."
+    environment:
+      # Discord section does not seem needed for the proxy 
+      # so we leave them set but empty
+      PluralKit__Discord__bot_token: ""
+      PluralKit__Discord__client_id: 0
+      PluralKit__Discord__client_secret: ""
+      PluralKit__Database__data_redis_addr: "redis://redis:6379"
+      PluralKit__Api__addr: "0.0.0.0:5000"
+      PluralKit__Api__ratelimit_redis_addr: "redis://redis:6379/2"
+      PluralKit__Api__remote_url: "http://api:5000"
+      RUST_BACKTRACE: "full"
     ports:
       - "127.0.0.1:2838:5000"
     restart: unless-stopped
